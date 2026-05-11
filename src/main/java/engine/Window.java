@@ -1,12 +1,12 @@
 package engine;
 
-import Scenes.LevelEditorScene;
-import Scenes.LevelScene;
-import Scenes.Scene;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import scenes.LevelEditorScene;
+import scenes.LevelScene;
+import scenes.Scene;
 import utils.Logger;
 import utils.Time;
 
