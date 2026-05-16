@@ -1,9 +1,12 @@
 package scenes;
 
+import engine.Camera;
 import engine.Window;
 
 public abstract class Scene {
     public Scene () {}
+
+    protected Camera camera;
 
     public abstract void update(float dt);
 

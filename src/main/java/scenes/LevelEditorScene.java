@@ -1,5 +1,7 @@
 package scenes;
 
+import engine.Camera;
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
 import utils.Logger;
@@ -20,10 +22,10 @@ public class LevelEditorScene extends Scene {
     // Cube vertices
     private float[] vertexArray = {
         // position         // color
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,  // bottom right
-         0.5f,  0.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,  // up right
-        -0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,  // up left
-        -0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,  // bottom left
+         100.5f,    0.5f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,  // bottom right
+         0.5f,    100.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,  // up right
+         100.5f,  100.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f,  // up left
+         0.5f,      0.5f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f,  // bottom left
     };
 
     // Points must be counter-clockwise order, from bottom right
@@ -52,6 +54,9 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void init() {
+        // Creating perspective by having a custom camera
+        this.camera = new Camera(new Vector2f());
+
         // Initializing & compiling shaders
         defaultShader.init();
 
@@ -95,12 +100,19 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void update(float dt) {
+        this.camera.position.x -= 32f * dt;
+
         defaultShader.use();
+        defaultShader.uploadMatrix4f("uProjection", camera.getProjectionMatrix());
+        defaultShader.uploadMatrix4f("uView", camera.getViewMatrix());
 
         glBindVertexArray(vaoID);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
         glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
+        defaultShader.detach();
     }
 }

@@ -126,10 +126,10 @@ public class Window {
     }
 
     public void loop() {
+        float initTime = Time.getTime();
+        float endTime, deltaTime = 0.0f;
+
         while (!glfwWindowShouldClose(glfwWindow)) {
-            float initTime = Time.getTime();
-            float endTime;
-            float deltaTime = 0.0f;
 
             // Processing all important events like keyboard / mouse
             glfwPollEvents();
@@ -152,6 +152,7 @@ public class Window {
                     this.swapScene(1);
                 }
             }
+
             currentScene.update(deltaTime);
 
             // Swapping buffering layers
