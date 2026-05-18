@@ -120,6 +120,8 @@ public class Window {
         // Idk what this does, honestly.
         // Sounded important on docs for 'bindings'
         GL.createCapabilities();
+        glEnable(GL_DEPTH_TEST);
+
         this.swapScene(0);
 
         logger.log("Initialized. GLFW version: " + Version.getVersion());
@@ -136,14 +138,14 @@ public class Window {
 
             // Each frame must be cleared before re-rendering
             glClearColor(r, g, b, a);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             // Handling scene-swapping on 'K' key
             if (KeyListener.isKeyPressed(GLFW_KEY_K) && r == 1) {
                 isFading = true;
             }
 
-            if (isFading) {
+            if (isFading && currentScene.getClass().getName().equals(LevelEditorScene.class.getName())) {
                 r = Math.max(r - 0.05f, 0.0f);
                 g = Math.max(g - 0.05f, 0.0f);
                 b = Math.max(b - 0.05f, 0.0f);
