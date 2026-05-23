@@ -27,5 +27,6 @@ in vec2 fTexCoords;
 out vec4 color;
 
 void main() {
-    color = texture(TEX_SAMPLER, fTexCoords);
+//    color = texture(TEX_SAMPLER, fTexCoords);
+    color = fColor;
 }

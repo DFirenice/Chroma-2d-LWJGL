@@ -1,25 +1,25 @@
-package scenes;
+package components;
 
-import engine.Camera;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
-import renderer.Shader;
-import renderer.Texture;
-import utils.Logger;
-import utils.Time;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL20.*;
+import static components.Terrain.CHUNK_SIZE;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
-public class LevelEditorScene extends Scene {
-    Logger logger = new Logger(this.getClass());
+public class Chunk extends Object {
+    protected Vector2f posIndex;
 
-    private Shader defaultShader;
-    private Texture testTexture;
+    private float[] vertexArray;
+    private int[] elementArray;
 
     private int vaoID, vboID, eboID;
 
@@ -27,53 +27,33 @@ public class LevelEditorScene extends Scene {
     private FloatBuffer vertexBuffer;
     private IntBuffer elementBuffer;
 
-    // Cube vertices with local coordinates
-    private float[] vertexArray = {
-        // position (x, y, z)      // color                  // texture coordinates
-         100.0f, -100.0f, 0.0f,    0.0f, 0.0f, 0.0f, 1.0f,   1, 1, // bottom right
-         100.0f,  100.0f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,   1, 0, // up right
-        -100.0f,  100.0f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,   0, 0, // up left
-        -100.0f, -100.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,   0, 1, // bottom left
-    };
+    public Chunk(String chunkID, Vector2f posIndex) {
+        super(chunkID);
+        this.posIndex = posIndex;
 
-    // Points must be counter-clockwise order, from bottom right
-    private int[] elementArray = {
-        /* in triangles:
-        *
-        *   3        2
-        *
-        *   x        1
-        *
-        *       or
-        *
-        *   2        x
-        *
-        *   3        1
-        *
-        */
-        0, 1, 2, // Top right triangle
-        0, 2, 3
-    };
+        assert posIndex.x != 0 && posIndex.y != 0 : "Error: Invalid chunk coordinates - (" + posIndex.x + ", " + posIndex.y + ")";
 
-    public LevelEditorScene () {
-        defaultShader = new Shader("src/assets/shaders/default.glsl");
-        logger.log("Swap: Scene active");
+        this.vertexArray = new float[]{
+             // 3f Vector                                                 Color                       Texture
+             CHUNK_SIZE * posIndex.x, -CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Bottom right
+             CHUNK_SIZE * posIndex.x,  CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top Right
+            -CHUNK_SIZE * posIndex.x,  CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top left
+            -CHUNK_SIZE * posIndex.x, -CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Bottom left
+        };
+
+        this.elementArray = new int[]{
+            0, 1, 2, // Top right triangle
+            0, 2, 3 // Bottom left triangle
+        };
     }
 
     @Override
     public void init() {
-        // Creating perspective by having a custom camera
-        this.camera = new Camera(new Vector2f());
-
-        // Initializing & compiling shaders
-        defaultShader.init();
-        testTexture = new Texture("src/assets/textures/testTexture.jpg");
-
         // Creating VAO, VBO, and EBO objects, and sending to the GPU
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
 
-            // OpenGL expects buffer, so we create buffer
+        // OpenGL expects buffer, so we create buffer
         vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
         vertexBuffer.put(vertexArray);
         vertexBuffer.flip(); // Finalizing the buffer for reading
@@ -82,7 +62,7 @@ public class LevelEditorScene extends Scene {
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
         glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
 
-            // Creating indices and uploading
+        // Creating indices and uploading
         elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
         elementBuffer.put(elementArray);
         elementBuffer.flip();
@@ -112,17 +92,6 @@ public class LevelEditorScene extends Scene {
 
     @Override
     public void update(float dt) {
-        defaultShader.use();
-
-        // Uploading Texture
-//        defaultShader.uploadTexture("TEX_SAMPLER", 0);
-//        glActiveTexture(GL_TEXTURE0);
-//        testTexture.bind();
-
-        // Uploading Camera matrices
-        defaultShader.uploadMatrix4f("uProjection", camera.getProjectionMatrix());
-        defaultShader.uploadMatrix4f("uView", camera.getViewMatrix());
-
         glBindVertexArray(vaoID);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
@@ -131,6 +100,5 @@ public class LevelEditorScene extends Scene {
         glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
-        defaultShader.detach();
     }
 }
