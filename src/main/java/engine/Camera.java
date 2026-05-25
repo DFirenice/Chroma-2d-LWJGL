@@ -2,7 +2,6 @@ package engine;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 public class Camera {
     private Matrix4f projectionMatrix, viewMatrix;
@@ -29,8 +28,8 @@ public class Camera {
             640.0f,
             -360.0f,
             360.0f,
-            -1000.0f,
-            1000.0f
+            -5000.0f,
+            5000.0f
         );
     }
 
@@ -58,5 +57,14 @@ public class Camera {
 
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
+    }
+
+    public void updatePosition() {
+        this.viewMatrix.identity();
+        this.viewMatrix
+            .translate(position.x, position.y, -20.0f)
+            .rotateX((float)Math.toRadians(63))
+            .rotateY((float)Math.toRadians(0))
+            .rotateZ((float)Math.toRadians(-46));
     }
 }

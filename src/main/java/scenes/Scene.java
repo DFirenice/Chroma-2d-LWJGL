@@ -11,9 +11,9 @@ public abstract class Scene {
     public abstract void update(float dt);
 
     public void init() {
-        Window.get().r = 1;
-        Window.get().g = 1;
-        Window.get().b = 1;
-        Window.get().a = 1;
+        Window.get().r = 1.0f;
+        Window.get().g = 1.0f;
+        Window.get().b = 1.0f;
+        Window.get().a = 1.0f;
     }
 }

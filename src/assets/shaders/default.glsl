@@ -9,11 +9,13 @@ uniform mat4 uView;
 
 out vec4 fColor;
 out vec2 fTexCoords;
+out vec3 fPos;
 
 void main() {
     fColor = aColor;
     fTexCoords = aTexCoords;
     gl_Position = uProjection * uView * vec4(aPos, 1.0);
+    fPos = aPos;
 }
 
 #type fragment
@@ -23,10 +25,12 @@ uniform sampler2D TEX_SAMPLER;
 
 in vec4 fColor;
 in vec2 fTexCoords;
+in vec3 fPos;
 
 out vec4 color;
 
 void main() {
 //    color = texture(TEX_SAMPLER, fTexCoords);
-    color = fColor;
+    // Hardcoded height value
+    color = vec4(abs(fPos.z) / 50.0);
 }

@@ -1,6 +1,8 @@
 package scenes;
 
+import components.Terrain;
 import engine.Camera;
+import engine.KeyListener;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
@@ -11,6 +13,7 @@ import utils.Time;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -19,45 +22,37 @@ public class LevelEditorScene extends Scene {
     Logger logger = new Logger(this.getClass());
 
     private Shader defaultShader;
-    private Texture testTexture;
+    //private Texture testTexture;
 
-    private int vaoID, vboID, eboID;
-
-    // Tets for a dynamic value
-    private FloatBuffer vertexBuffer;
-    private IntBuffer elementBuffer;
-
-    // Cube vertices with local coordinates
-    private float[] vertexArray = {
-        // position (x, y, z)      // color                  // texture coordinates
-         100.0f, -100.0f, 0.0f,    0.0f, 0.0f, 0.0f, 1.0f,   1, 1, // bottom right
-         100.0f,  100.0f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,   1, 0, // up right
-        -100.0f,  100.0f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,   0, 0, // up left
-        -100.0f, -100.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,   0, 1, // bottom left
-    };
-
-    // Points must be counter-clockwise order, from bottom right
-    private int[] elementArray = {
-        /* in triangles:
-        *
-        *   3        2
-        *
-        *   x        1
-        *
-        *       or
-        *
-        *   2        x
-        *
-        *   3        1
-        *
-        */
-        0, 1, 2, // Top right triangle
-        0, 2, 3
-    };
+    // World
+    private Terrain levelTerrain;
+    private static final float CAMERA_SPEED = 250.0f;
 
     public LevelEditorScene () {
         defaultShader = new Shader("src/assets/shaders/default.glsl");
         logger.log("Swap: Scene active");
+    }
+
+    private void handleCameraMovement(float dt) {
+        if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
+            camera.position.x += CAMERA_SPEED * dt;
+            camera.updatePosition();
+        }
+
+        if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
+            camera.position.x -= CAMERA_SPEED * dt;
+            camera.updatePosition();
+        }
+
+        if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
+            camera.position.y -= CAMERA_SPEED * dt;
+            camera.updatePosition();
+        }
+
+        if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
+            camera.position.y += CAMERA_SPEED * dt;
+            camera.updatePosition();
+        }
     }
 
     @Override
@@ -67,47 +62,11 @@ public class LevelEditorScene extends Scene {
 
         // Initializing & compiling shaders
         defaultShader.init();
-        testTexture = new Texture("src/assets/textures/testTexture.jpg");
+        //testTexture = new Texture("src/assets/textures/testTexture.jpg");
 
-        // Creating VAO, VBO, and EBO objects, and sending to the GPU
-        vaoID = glGenVertexArrays();
-        glBindVertexArray(vaoID);
-
-            // OpenGL expects buffer, so we create buffer
-        vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
-        vertexBuffer.put(vertexArray);
-        vertexBuffer.flip(); // Finalizing the buffer for reading
-
-        vboID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-            // Creating indices and uploading
-        elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
-        elementBuffer.put(elementArray);
-        elementBuffer.flip();
-
-        eboID = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
-        // Adding vertex attribute pointers
-        // (basically size in memory of one stride vertex element)
-        int positionSize = 3;   // x, y, z
-        int colorSize = 4;      // r, g, b, a
-        int uvSize = 2;
-        int vertexSizeBytes = (positionSize + colorSize + uvSize) * Float.BYTES;
-
-        // What index (specified in '/src/assets/default.glsl'), size of attributes
-        // passing type, normalization, bytes until next vertex, starting point
-        glVertexAttribPointer(0, positionSize, GL_FLOAT, false, vertexSizeBytes, 0);
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionSize * Float.BYTES);
-        glEnableVertexAttribArray(1);
-
-        glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (positionSize + colorSize) * Float.BYTES);
-        glEnableVertexAttribArray(2);
+        // Instantiating world
+        this.levelTerrain = new Terrain();
+        levelTerrain.init();
     }
 
     @Override
@@ -119,16 +78,14 @@ public class LevelEditorScene extends Scene {
 //        glActiveTexture(GL_TEXTURE0);
 //        testTexture.bind();
 
-        // Uploading Camera matrices
+        // Uploading Camera projection matrices
         defaultShader.uploadMatrix4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMatrix4f("uView", camera.getViewMatrix());
 
-        glBindVertexArray(vaoID);
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
+        levelTerrain.update(dt);
 
-        glDrawElements(GL_TRIANGLES, elementArray.length, GL_UNSIGNED_INT, 0);
+        // Camera movement (WASD)
+        handleCameraMovement(dt);
 
         glBindVertexArray(0);
         defaultShader.detach();

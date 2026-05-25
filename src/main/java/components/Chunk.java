@@ -1,7 +1,9 @@
 package components;
 
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
+import utils.Logger;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -16,9 +18,14 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Chunk extends Object {
-    protected Vector2f posIndex;
+    // Debug
+    private Logger logger = new Logger(this.getClass());
+    private String chunkID;
 
-    private float[] vertexArray;
+    protected Vector2i posIndex;
+    private float offsetX, offsetY;
+
+    protected float[] vertexArray;
     private int[] elementArray;
 
     private int vaoID, vboID, eboID;
@@ -27,20 +34,39 @@ public class Chunk extends Object {
     private FloatBuffer vertexBuffer;
     private IntBuffer elementBuffer;
 
-    public Chunk(String chunkID, Vector2f posIndex) {
+    private static final int positionSize = 3;
+    private static final int colorSize = 4;
+    private static final int uvSize = 2;
+    protected static final int vertexSize = (positionSize + colorSize + uvSize);
+
+    public Chunk(String chunkID, Vector2i posIndex, float[][] heights) {
         super(chunkID);
+        this.chunkID = chunkID;
         this.posIndex = posIndex;
 
-        assert posIndex.x != 0 && posIndex.y != 0 : "Error: Invalid chunk coordinates - (" + posIndex.x + ", " + posIndex.y + ")";
+        //assert posIndex.x != 0 && posIndex.y != 0 : "Error: Invalid chunk coordinates - (" + posIndex.x + ", " + posIndex.y + ")";
+
+        int hx = posIndex.x + Terrain.getHalfWidth();
+        int hy = posIndex.y + Terrain.getHalfHeight();
+
+        float bl = heights[hx][hy];
+        float br = heights[hx + 1][hy];
+        float tl = heights[hx][hy + 1];
+        float tr = heights[hx + 1][hy + 1];
+
+        offsetX = CHUNK_SIZE * posIndex.x;
+        offsetY = CHUNK_SIZE * posIndex.y;
 
         this.vertexArray = new float[]{
-             // 3f Vector                                                 Color                       Texture
-             CHUNK_SIZE * posIndex.x, -CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Bottom right
-             CHUNK_SIZE * posIndex.x,  CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top Right
-            -CHUNK_SIZE * posIndex.x,  CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top left
-            -CHUNK_SIZE * posIndex.x, -CHUNK_SIZE * posIndex.y, 0.0f,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Bottom left
+            // 3f Vector                                          Color                       Texture
+            offsetX + CHUNK_SIZE, offsetY,                br,     0.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Bottom right
+            offsetX + CHUNK_SIZE, offsetY + CHUNK_SIZE,   tr,     1.0f, 0.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top Right
+            offsetX,              offsetY + CHUNK_SIZE,   tl,     0.0f, 1.0f, 0.0f, 0.0f,     0.0f, 0.0f, // Top left
+            offsetX,              offsetY,                bl,     0.0f, 0.0f, 1.0f, 0.0f,     0.0f, 0.0f, // Bottom left
         };
 
+        // I'm thinking of making this more of an efficient use
+        //  - somewhere on the outer layer
         this.elementArray = new int[]{
             0, 1, 2, // Top right triangle
             0, 2, 3 // Bottom left triangle
@@ -73,10 +99,7 @@ public class Chunk extends Object {
 
         // Adding vertex attribute pointers
         // (basically size in memory of one stride vertex element)
-        int positionSize = 3;   // x, y, z
-        int colorSize = 4;      // r, g, b, a
-        int uvSize = 2;
-        int vertexSizeBytes = (positionSize + colorSize + uvSize) * Float.BYTES;
+        int vertexSizeBytes = vertexSize * Float.BYTES;
 
         // What index (specified in '/src/assets/default.glsl'), size of attributes
         // passing type, normalization, bytes until next vertex, starting point
@@ -88,6 +111,8 @@ public class Chunk extends Object {
 
         glVertexAttribPointer(2, uvSize, GL_FLOAT, false, vertexSizeBytes, (positionSize + colorSize) * Float.BYTES);
         glEnableVertexAttribArray(2);
+
+        logger.log("Chunk [" + chunkID + "] instantiated");
     }
 
     @Override
