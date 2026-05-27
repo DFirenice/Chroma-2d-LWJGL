@@ -15,6 +15,7 @@ project.ext.lwjglNatives = "natives-windows"
 
 dependencies {
     implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation("com.raylabz:opensimplex:1.0.3")
 
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-assimp"

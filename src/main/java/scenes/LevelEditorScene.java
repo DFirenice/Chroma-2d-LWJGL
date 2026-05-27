@@ -1,5 +1,6 @@
 package scenes;
 
+import components.Chunk;
 import components.Terrain;
 import engine.Camera;
 import engine.KeyListener;
@@ -26,31 +27,37 @@ public class LevelEditorScene extends Scene {
 
     // World
     private Terrain levelTerrain;
-    private static final float CAMERA_SPEED = 250.0f;
+    private static final float CAMERA_SPEED = 500.0f;
+    private static final long LEVEL_SEED = 123456L;
 
     public LevelEditorScene () {
         defaultShader = new Shader("src/assets/shaders/default.glsl");
         logger.log("Swap: Scene active");
     }
 
+    private static final float DIAGONAL = 0.70710678f; // 1 / sqrt(2)
     private void handleCameraMovement(float dt) {
         if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
-            camera.position.x += CAMERA_SPEED * dt;
+            camera.position.x -= CAMERA_SPEED * dt * DIAGONAL;
+            camera.position.y -= CAMERA_SPEED * dt * DIAGONAL;
             camera.updatePosition();
         }
 
         if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
-            camera.position.x -= CAMERA_SPEED * dt;
+            camera.position.x += CAMERA_SPEED * dt * DIAGONAL;
+            camera.position.y += CAMERA_SPEED * dt * DIAGONAL;
             camera.updatePosition();
         }
 
         if (KeyListener.isKeyPressed(GLFW_KEY_W)) {
-            camera.position.y -= CAMERA_SPEED * dt;
+            camera.position.x -= CAMERA_SPEED * dt;
+            camera.position.y += CAMERA_SPEED * dt;
             camera.updatePosition();
         }
 
         if (KeyListener.isKeyPressed(GLFW_KEY_S)) {
-            camera.position.y += CAMERA_SPEED * dt;
+            camera.position.y -= CAMERA_SPEED * dt;
+            camera.position.x += CAMERA_SPEED * dt;
             camera.updatePosition();
         }
     }
@@ -65,7 +72,7 @@ public class LevelEditorScene extends Scene {
         //testTexture = new Texture("src/assets/textures/testTexture.jpg");
 
         // Instantiating world
-        this.levelTerrain = new Terrain();
+        this.levelTerrain = new Terrain(LEVEL_SEED);
         levelTerrain.init();
     }
 
@@ -81,6 +88,7 @@ public class LevelEditorScene extends Scene {
         // Uploading Camera projection matrices
         defaultShader.uploadMatrix4f("uProjection", camera.getProjectionMatrix());
         defaultShader.uploadMatrix4f("uView", camera.getViewMatrix());
+        defaultShader.uploadFloat("flMaxHeight", Chunk.HEIGHT);
 
         levelTerrain.update(dt);
 

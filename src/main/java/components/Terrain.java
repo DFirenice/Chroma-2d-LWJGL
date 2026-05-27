@@ -3,10 +3,12 @@ package components;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
+import com.raylabz.opensimplex.OpenSimplexNoise;
 
 public class Terrain {
-    private static Vector2i size2i = new Vector2i(10, 10); // Terrain area in chunks
+    private static Vector2i size2i = new Vector2i(16, 16); // Terrain area in chunks
     private float[][] heights;
+    private long seed;
 
     // Terrain scale
     private final int width = size2i.x * 2;
@@ -16,10 +18,12 @@ public class Terrain {
 
     // 50 units ~ 50px
     public static final float CHUNK_SIZE = 100.0f;
+    private static final int NOISE_SIZE_FACTOR = 25; // Larger values create smaller biomes
     private boolean isGenerated;
 
-    public Terrain() {
+    public Terrain(long seed) {
         this.isGenerated = false;
+        this.seed = seed;
         this.heights = new float
             [width + 1]
             [height + 1];
@@ -32,14 +36,15 @@ public class Terrain {
      * Generates chunks as game objects
      */
     public void init() {
+        OpenSimplexNoise noise = new OpenSimplexNoise(seed) ;
         if (!this.isGenerated) {
             this.isGenerated = true;
 
-            // Later will use Perlin noise
+            // Using Perlin noise to generate heights
             for (int x = 0; x <= width; x++) {
                 for (int y = 0; y <= height; y++) {
                     heights[x][y] =
-                        (float)(Math.random() * -50.0f);
+                        (float)(noise.getNoise2D(x * NOISE_SIZE_FACTOR,y * NOISE_SIZE_FACTOR).getValue() * -Chunk.HEIGHT);
                 }
             }
 

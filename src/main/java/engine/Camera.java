@@ -7,6 +7,8 @@ public class Camera {
     private Matrix4f projectionMatrix, viewMatrix;
     public Vector2f position;
 
+    private float CLIPPING_BUFFER = 50.0f;
+
     public Camera(Vector2f position) {
         this.position = position;
         this.projectionMatrix = new Matrix4f();
@@ -14,9 +16,9 @@ public class Camera {
 
         this.viewMatrix
             .translate(-position.x, -position.y, -20.0f)
-            .rotateX((float)Math.toRadians(63))
+            .rotateX((float)Math.toRadians(60))
             .rotateY((float)Math.toRadians(0))
-            .rotateZ((float)Math.toRadians(-46));
+            .rotateZ((float)Math.toRadians(-45));
 
         adjustProjection();
     }
@@ -24,12 +26,12 @@ public class Camera {
     public void adjustProjection() {
         this.projectionMatrix.identity();
         this.projectionMatrix.ortho(
-            -640.0f,
-            640.0f,
-            -360.0f,
-            360.0f,
-            -5000.0f,
-            5000.0f
+            -Window.get().width / 2,
+            Window.get().width / 2,
+            (float) -Window.get().height / 2,
+            (float) Window.get().height / 2,
+            -Window.get().height + CLIPPING_BUFFER,
+            Window.get().height + CLIPPING_BUFFER
         );
     }
 
@@ -37,34 +39,17 @@ public class Camera {
         return this.projectionMatrix;
     }
 
-    // Old View matrix. Plain 2D
-    //public Matrix4f getViewMatrix() {
-    //    Vector3f cameraFront = new Vector3f(0.0f, 0.0f, -1.0f);
-    //    Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
-    //
-    //    this.viewMatrix.identity();
-    //    // Where is the camera,
-    //    // Its front,
-    //    // What its up vector
-    //    viewMatrix.lookAt(
-    //        new Vector3f(position.x, position.y, 20.0f),
-    //        cameraFront.add(position.x, position.y, 0.0f),
-    //        cameraUp
-    //    );
-    //
-    //    return this.viewMatrix;
-    //}
-
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
     }
 
     public void updatePosition() {
+        adjustProjection();
         this.viewMatrix.identity();
         this.viewMatrix
-            .translate(position.x, position.y, -20.0f)
-            .rotateX((float)Math.toRadians(63))
+            .rotateX((float)Math.toRadians(60))
             .rotateY((float)Math.toRadians(0))
-            .rotateZ((float)Math.toRadians(-46));
+            .rotateZ((float)Math.toRadians(-45))
+            .translate(-position.x, -position.y, -20.0f);
     }
 }

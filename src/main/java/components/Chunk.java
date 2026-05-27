@@ -21,6 +21,7 @@ public class Chunk extends Object {
     // Debug
     private Logger logger = new Logger(this.getClass());
     private String chunkID;
+    public static final float HEIGHT = 50.0f;
 
     protected Vector2i posIndex;
     private float offsetX, offsetY;
