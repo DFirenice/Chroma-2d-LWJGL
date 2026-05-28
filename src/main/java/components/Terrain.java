@@ -4,17 +4,18 @@ import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import com.raylabz.opensimplex.OpenSimplexNoise;
+import renderer.Region;
 
 public class Terrain {
-    private static Vector2i size2i = new Vector2i(16, 16); // Terrain area in chunks
-    private float[][] heights;
+    private final Region region = new Region();
     private long seed;
+
+    private static Vector2i size2i = new Vector2i(160, 160); // Terrain area in chunks
+    private float[][] heights;
 
     // Terrain scale
     private final int width = size2i.x * 2;
     private final int height = size2i.y * 2;
-
-    private ArrayList<Chunk> chunks = new ArrayList<>((int)(width * height));
 
     // 50 units ~ 50px
     public static final float CHUNK_SIZE = 100.0f;
@@ -34,6 +35,7 @@ public class Terrain {
 
     /**
      * Generates chunks as game objects
+     * before
      */
     public void init() {
         OpenSimplexNoise noise = new OpenSimplexNoise(seed) ;
@@ -57,18 +59,14 @@ public class Terrain {
         for (int x = -size2i.x; x < size2i.x; x++) {
             for (int y = -size2i.y; y < size2i.y; y++) {
                 Chunk newChunk = new Chunk("chunk(" + x + ", " + y + ")", new Vector2i(x, y), heights);
-                chunks.add(newChunk);
-                newChunk.init();
+                region.batchChunk(newChunk);
             }
         }
+        region.init();
     }
 
-    /**
-     * Updating chunks with DeltaTime
-     */
+    // Updating chunks with DeltaTime
     public void update(float dt) {
-        chunks.forEach(chunk -> {
-           chunk.update(dt);
-        });
+        region.render(dt);
     }
 }

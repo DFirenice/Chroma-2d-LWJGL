@@ -160,6 +160,9 @@ public class Window {
             // Swapping buffering layers
             glfwSwapBuffers(glfwWindow);
 
+            // For performance tests
+//            logger.log(1 / deltaTime +  " FPS");
+
             // Measuring execution time
             // Used as well in scenes as 'deltaTime'
             endTime = Time.getTime();
