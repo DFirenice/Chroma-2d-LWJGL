@@ -1,12 +1,19 @@
 package renderer;
 
 import components.Chunk;
+import components.Terrain;
+import engine.Camera;
+import engine.Window;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
+import scenes.LevelEditorScene;
+import scenes.Scene;
 import utils.Logger;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL15.*;
@@ -35,7 +42,13 @@ public class Region {
 
     // Array of Chunks, for all necessary chunks to be
     // later normalized into a single buffer array
-    public ArrayList<Chunk> visibleChunks = new ArrayList<>();
+    public ArrayList<Chunk> regionChunks = new ArrayList<>();
+    private Camera camera = Scene.getCamera();
+
+    // Used for culling
+//    float perspectiveFactor = 2f;
+    float halfW = (Window.get().width); // / 2f) * perspectiveFactor;
+    float halfH = (Window.get().height * 1.2f); // / 2f) * perspectiveFactor;
 
     // Pure point data
     private FloatBuffer combinedVertices;
@@ -68,7 +81,7 @@ public class Region {
 
         vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW);
 
         // Creating indices and uploading
         elementBuffer = BufferUtils.createIntBuffer(combinedIndices.limit());
@@ -77,7 +90,7 @@ public class Region {
 
         eboID = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_DYNAMIC_DRAW);
 
         // Adding vertex attribute pointers
         // (basically size in memory of one stride vertex element)
@@ -94,12 +107,12 @@ public class Region {
         glVertexAttribPointer(2, UV_SIZE, GL_FLOAT, false, vertexSizeBytes, (POS_SIZE + COLOR_SIZE) * Float.BYTES);
         glEnableVertexAttribArray(2);
 
-        logger.log("Terrain Plane with [" + visibleChunks.size() + "] chunks has been instantiated");
+        logger.log("Terrain Plane with [" + regionChunks.size() + "] chunks has been instantiated");
     }
 
     // Adds chunks to the batcher
     public void batchChunk(Chunk chunk) {
-        this.visibleChunks.add(chunk);
+        this.regionChunks.add(chunk);
     }
 
     // Normalizes chunks, to construct a uniform mesh
@@ -110,7 +123,7 @@ public class Region {
         int totalIndices = 0;
 
         // Calculating total size
-        for (Chunk chunk : visibleChunks) {
+        for (Chunk chunk : regionChunks) {
             totalVertices += chunk.vertexArray.length;
             totalIndices += chunk.elementArray.length;
         }
@@ -121,8 +134,8 @@ public class Region {
 
         int vertexOffset = 0; // how many vertices we've already added
 
-        for (Chunk chunk : visibleChunks) {
-
+        for (Chunk chunk : regionChunks) {
+            if (!chunk.isVisible()) { continue; }
             // Adding vertices
             combinedVertices.put(chunk.vertexArray);
 
@@ -140,7 +153,45 @@ public class Region {
         combinedIndices.flip();
     }
 
+    // Unloading (culling) chunks that are not visible to the camera
+    // for some extra performance
+    private void cullOutboundChunks() {
+        float camX = camera.getPosition().x();
+        float camY = camera.getPosition().y();
+
+        float camMinX = camX - halfW;
+        float camMaxX = camX + halfW;
+        float camMinY = camY - halfH;
+        float camMaxY = camY + halfH;
+
+        for (Chunk chunk : this.regionChunks) {
+            float chunkMinX = chunk.posIndex.x() * Terrain.CHUNK_SIZE;
+            float chunkMinY = chunk.posIndex.y() * Terrain.CHUNK_SIZE;
+
+            float chunkMaxX = chunkMinX + Terrain.CHUNK_SIZE;
+            float chunkMaxY = chunkMinY + Terrain.CHUNK_SIZE;
+
+            boolean isInbound = chunkMaxX >= camMinX &&
+                                chunkMinX <= camMaxX &&
+                                chunkMaxY >= camMinY &&
+                                chunkMinY <= camMaxY;
+
+            chunk.setVisibility(isInbound);
+        }
+
+        uniformTerrainChunks();
+    }
+
     public void render(float dt) {
+        cullOutboundChunks();
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        glBufferData(GL_ARRAY_BUFFER, combinedVertices, GL_DYNAMIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, combinedIndices, GL_DYNAMIC_DRAW);
+
+        // Render the updated dynamic batch
         glBindVertexArray(vaoID);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);

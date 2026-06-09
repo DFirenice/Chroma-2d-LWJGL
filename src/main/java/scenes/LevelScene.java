@@ -1,5 +1,6 @@
 package scenes;
 
+import engine.Camera;
 import utils.Logger;
 
 public class LevelScene extends Scene {

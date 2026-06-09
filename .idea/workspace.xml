@@ -5,12 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e99616de-2d81-4d5c-9e32-c2ca75478a04" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/renderer/Region.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assets/shaders/default.glsl" beforeDir="false" afterPath="$PROJECT_DIR$/src/assets/shaders/default.glsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/components/Chunk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/components/Chunk.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/components/Object.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/components/Object.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/components/Terrain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/components/Terrain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/engine/Window.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/engine/Window.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/engine/Camera.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/engine/Camera.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/renderer/Region.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/renderer/Region.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/scenes/LevelEditorScene.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/scenes/LevelEditorScene.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/scenes/LevelScene.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/scenes/LevelScene.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/scenes/Scene.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/scenes/Scene.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

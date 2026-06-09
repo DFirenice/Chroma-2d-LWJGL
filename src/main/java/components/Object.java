@@ -5,6 +5,17 @@ package components;
 public abstract class Object {
     protected String objectID;
 
+    // For culling and hiding objects
+    private boolean isVisible = false;
+
+    public void setVisibility (boolean visibility) {
+        this.isVisible = visibility;
+    }
+
+    public boolean isVisible() {
+        return this.isVisible;
+    }
+
     public Object(String objectID) {
         this.objectID = objectID;
     }

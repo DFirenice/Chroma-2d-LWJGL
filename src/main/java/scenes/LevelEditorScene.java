@@ -27,7 +27,7 @@ public class LevelEditorScene extends Scene {
 
     // World
     private Terrain levelTerrain;
-    private static final float CAMERA_SPEED = 500.0f;
+    private static final float CAMERA_SPEED = 700.0f;
     private static final long LEVEL_SEED = 123456L;
 
     public LevelEditorScene () {

@@ -52,4 +52,8 @@ public class Camera {
             .rotateZ((float)Math.toRadians(-45))
             .translate(-position.x, -position.y, -20.0f);
     }
+
+    public Vector2f getPosition() {
+        return this.position;
+    }
 }

@@ -1,8 +1,8 @@
 #type vertex
 #version 330 core
-layout (location=0) in vec3 aPos;
-layout (location=1) in vec4 aColor;
-layout (location=2) in vec2 aTexCoords;
+layout (location=0) in vec3  aPos;
+layout (location=1) in vec4  aColor;
+layout (location=2) in vec2  aTexCoords;
 
 uniform mat4 uProjection;
 uniform mat4 uView;
@@ -37,6 +37,12 @@ void main() {
 //    color = texture(TEX_SAMPLER, fTexCoords);
     // Hardcoded height factor value
     float factor = abs(fPos.z) / fMaxHeight;
+//    color = vec4(factor);
+//    fColor = fColor/factor;
+//    vec4 testColor = fColor / factor;
+
+    color = fColor / factor;
+    color = vec4(fColor.w);
     if (factor <= 0.1) {
         color = vec4(0.2, 0.2, 0.8, 1.0);
     }

@@ -6,9 +6,13 @@ import engine.Window;
 public abstract class Scene {
     public Scene () {}
 
-    protected Camera camera;
+    protected static Camera camera;
 
     public abstract void update(float dt);
+
+    public static Camera getCamera() {
+        return camera;
+    }
 
     public void init() {
         Window.get().r = 1.0f;

@@ -10,7 +10,7 @@ public class Terrain {
     private final Region region = new Region();
     private long seed;
 
-    private static Vector2i size2i = new Vector2i(160, 160); // Terrain area in chunks
+    private static Vector2i size2i = new Vector2i(50, 50); // Terrain area in chunks
     private float[][] heights;
 
     // Terrain scale
@@ -34,8 +34,8 @@ public class Terrain {
     public static int getHalfHeight() { return size2i.y; }
 
     /**
-     * Generates chunks as game objects
-     * before
+     * Preparing world data for chunks to be created
+     * Such as generating seed's height map (based off noise)
      */
     public void init() {
         OpenSimplexNoise noise = new OpenSimplexNoise(seed) ;
@@ -54,6 +54,10 @@ public class Terrain {
         }
     }
 
+    /**
+    * Completing & generating chunks,
+    * uploading them to the GPU and preparing to be rendered
+    */
     private void generateChunks() {
         // Generating chunks for the plane with modifications on depth
         for (int x = -size2i.x; x < size2i.x; x++) {
@@ -65,7 +69,7 @@ public class Terrain {
         region.init();
     }
 
-    // Updating chunks with DeltaTime
+    // Updating chunks with new ticks
     public void update(float dt) {
         region.render(dt);
     }
